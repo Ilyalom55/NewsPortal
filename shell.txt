@@ -1,0 +1,105 @@
+(venv) PS D:\NewsPortal\NewsPaper> python manage.py shell
+Python 3.11.4 (tags/v3.11.4:d2340ef, Jun  7 2023, 05:45:37) [MSC v.1934 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from news.models import *
+>>> user1 = User.objects.create_user(username='Иванов Иван')
+>>> user2 = User.objects.create_user(username='Петро Петр')
+>>> Author.objects.create(user=user1)
+<Author: Иванов Иван>
+>>> Author.objects.create(user=user2)
+<Author: Петро Петр>
+>>> Category.objects.create(category_name='Спорт')
+<Category: Спорт>
+>>> Category.objects.create(category_name='Наука')
+<Category: Наука>
+>>> Category.objects.create(category_name='Политика')
+<Category: Политика>
+>>> Category.objects.create(category_name='Бизнес')
+<Category: Бизнес>
+>>> a1 = Author.objects.get(id=1)
+>>> a2 = Author.objects.get(id=2)
+>>> Post.objects.create(author=a1, categoryChoice='AR', post_title='Статья о спорте',post_text='Ак Барс победил ЦСКА')     
+<Post: Post object (1)>
+>>> Post.objects.create(author=a2, categoryChoice='AR', post_title='Статья о политике',post_text='Что-то про политику')  
+<Post: Post object (2)>
+>>> Post.objects.create(author=a2, categoryChoice='NE', post_title='Новость о научном открытии',post_text='Открыли что-то т
+ам, где-то там')
+<Post: Post object (3)>
+>>> Post.objects.get(id=1).postCategory.add(Category.objects.get(id=1))
+>>> Post.objects.get(id=1).postCategory.add(Category.objects.get(id=2)) 
+>>> Post.objects.get(id=2).postCategory.add(Category.objects.get(id=3)) 
+>>> Comment.objects.create(post_comment=Post.objects.get(id=1),user_comment=Author.objects.get(id=1).user, comment_text='Ко
+мментарий к посту')
+<Comment: Comment object (1)>
+>>> Comment.objects.create(post_comment=Post.objects.get(id=1),user_comment=Author.objects.get(id=1).user, comment_text='Ко
+мментарий к посту 2')
+<Comment: Comment object (2)>
+>>> Comment.objects.create(post_comment=Post.objects.get(id=2),user_comment=Author.objects.get(id=2).user, comment_text='Ко
+мментарий к посту другого автора')
+<Comment: Comment object (3)>
+>>> Comment.objects.create(post_comment=Post.objects.get(id=2),user_comment=Author.objects.get(id=2).user, comment_text='Ко
+мментарий к посту другого автора 2')
+<Comment: Comment object (4)>
+>>> Post.objects.get(id=1).like()
+>>> Post.objects.get(id=1).like()
+>>> Post.objects.get(id=1).dislike() 
+>>> Post.objects.get(id=2).like() 
+>>> Post.objects.get(id=2).dislike() 
+>>> Comment.objects.get(id=1).like()
+>>> Comment.objects.get(id=1).like()
+>>> Comment.objects.get(id=1).like()
+>>> Comment.objects.get(id=1).dislike() 
+>>> Comment.objects.get(id=2).like() 
+>>> Comment.objects.get(id=1).like()
+>>> Comment.objects.get(id=2).like() 
+>>> Comment.objects.get(id=2).dislike() 
+>>> Comment.objects.get(id=1).rating
+3
+>>> aut1 = Author.objects.get(id=1)
+>>> aut1.update_rating()
+>>> aut1.rating_author
+7
+>>> Comment.objects.get(id=2).rating
+1
+>>> aut2 = Author.objects.get(id=2)
+>>> aut2.update_rating()
+>>> aut2.rating_author
+0
+>>> aut1.rating_author
+7
+>>> aut1.post_set.all().values('rating')
+<QuerySet [{'rating': 1}]>
+>>> aut1.user.comment_set.all().values('rating')
+<QuerySet [{'rating': 3}, {'rating': 1}]>
+>>> rate = Author.objects.all().order_by('-rating_author')[:1] 
+>>> rate
+<QuerySet [<Author: Иванов Иван>]>
+
+>>> arg = Post.objects.all().order_by('-rating')[:1]
+>>> for i in arg:
+...     f"Date:{i.post_time_in.day}"
+...     f"Rating:{i.rating}"
+...     i.author.user
+...     i.post_title
+...                
+'Date:15'
+'Rating:1'
+<User: Иванов Иван>
+'Статья о спорте'
+
+>>> data = Comment.objects.all().filter(post_comment=arg)
+>>> for j in data:
+...     F"Date:{j.comment_data.day}/{j.comment_data.month}/{j.comment_data.year}"
+...     j.user_comment
+...     F"Rating:{j.rating}"
+...     j.comment_text
+... 
+'Date:15/9/2023'
+<User: Иванов Иван>
+'Rating:3'
+'Комментарий к посту'
+'Date:15/9/2023'
+<User: Иванов Иван>
+'Rating:1'
+'Комментарий к посту 2'
